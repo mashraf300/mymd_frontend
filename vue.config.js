@@ -3,7 +3,7 @@ module.exports = defineConfig({
   devServer: {
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'https://mymdapi-819126018066.us-central1.run.app',
         changeOrigin: true,
       },
     },

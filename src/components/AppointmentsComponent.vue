@@ -15,10 +15,16 @@
           <strong>Time:</strong> {{ appointment.time }}
         </p>
         <p><strong>Status:</strong> {{ appointment.status }}</p>
+        <button @click="cancelAppointment(appointment.id)" v-if="appointment.status === 'pending'"> 
+          Cancel Appointment
+        </button>
       </div>
     </div>
     <div v-else>
       <p>You have no appointments scheduled.</p>
+    </div>
+    <div v-if="showSuccessMessage" class="success-message">
+      Appointment cancelled successfully!
     </div>
   </div>
 </template>
@@ -28,6 +34,7 @@ export default {
   data() {
     return {
       appointments: [],
+      showSuccessMessage: false, 
     };
   },
   mounted() {
@@ -49,6 +56,26 @@ export default {
     formatDate(date) {
       const options = { year: 'numeric', month: 'long', day: 'numeric' };
       return new Date(date).toLocaleDateString(undefined, options);
+    },
+    async cancelAppointment(appointmentId) {
+      try {
+        const response = await fetch(`/api/appointments/${appointmentId}`, {
+          method: 'DELETE', 
+        });
+
+        if (response.ok) {
+          this.fetchAppointments(); 
+          this.showSuccessMessage = true; 
+          setTimeout(() => {
+            this.showSuccessMessage = false; 
+          }, 3000); 
+        } else {
+          const error = await response.text();
+          console.error('Failed to cancel appointment:', error);
+        }
+      } catch (error) {
+        console.error('Failed to cancel appointment:', error);
+      }
     },
   },
 };

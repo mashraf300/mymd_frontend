@@ -4,11 +4,13 @@
       <img src="https://i.imgur.com/k019KSe.png" alt="MyMD Logo">
     </div>
     <nav class="nav-links">
-      <router-link to="/home">Home</router-link>
+      <router-link v-if="userRole !== 'admin'" to="/home">Home</router-link>
       <router-link v-if="userRole === 'user'" to="/appointments">Appointments</router-link>
       <router-link v-if="userRole === 'doctor'" to="/doctor-appointments">My Appointments</router-link>
       <router-link v-if="userRole === 'doctor'" to="/manage-schedule">Manage Schedule</router-link>
-      <router-link to="/records">Medical Records</router-link>
+      <router-link v-if="userRole !== 'admin'" to="/records">Medical Records</router-link>
+      <router-link to="/pharmacies">Pharmacies</router-link>
+      <router-link to="/mental-articles">Mental Health Resources</router-link>
     </nav>
     <div class="user-info">
       <span v-if="username">Welcome, {{ username }}</span>

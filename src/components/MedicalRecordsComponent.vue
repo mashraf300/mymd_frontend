@@ -15,15 +15,31 @@
               {{ doctor.name }}
             </li>
           </ul>
+          <div v-if="isDoctor" class="diagnosis-form">
+            <textarea v-model="diagnosisText[record.id]" placeholder="Add diagnosis"></textarea>
+            <button @click="addDiagnosis(record.id)" class="add-diagnosis-button">Add Diagnosis</button> 
+          </div>
+          <div v-if="record.diagnoses && record.diagnoses.length > 0">
+            <h4>Diagnoses:</h4>
+            <ul>
+              <li v-for="diagnosis in record.diagnoses" :key="diagnosis.id">
+                {{ diagnosis.diagnosis }} (by Dr. {{ diagnosis.doctor.name }})
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div v-if="showSuccessMessage[record.id]" class="success-message">
+          Diagnosis added successfully!
         </div>
       </div>
+      
     </div>
     <div v-else>
       <p>You have no medical records uploaded.</p>
     </div>
 
-    <h3>Add New Medical Record</h3>
-    <form @submit.prevent="addRecord">
+    <h3 v-if="isPatient">Add New Medical Record</h3>
+    <form v-if="isPatient" @submit.prevent="addRecord">
       <div class="form-group">
         <label for="image_url">Image URL:</label>
         <input type="text" id="image_url" v-model="newRecord.image_url" required>
@@ -56,7 +72,17 @@ export default {
         description: '',
         doctor_ids: [], 
       },
+      diagnosisText: {},
+      showSuccessMessage: {},
     };
+  },
+  computed: {
+    isPatient() {
+      return localStorage.getItem('role') === 'user';
+    },
+    isDoctor() {
+      return localStorage.getItem('role') === 'doctor';
+    }
   },
   mounted() {
     this.fetchMedicalRecords();
@@ -121,6 +147,38 @@ export default {
         console.error('Failed to add record:', error);
       }
     },
+    async addDiagnosis(recordId) {
+      try {
+        const doctorId = localStorage.getItem('user_id');
+        const diagnosisData = {
+          record_id: recordId,
+          doctor_id: doctorId,
+          diagnosis: this.diagnosisText[recordId],
+        };
+
+        const response = await fetch('/api/diagnoses', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(diagnosisData),
+        });
+
+        if (response.ok) {
+          this.fetchMedicalRecords(); 
+          this.diagnosisText[recordId] = '';
+          this.showSuccessMessage[recordId] = true; 
+          setTimeout(() => {
+            this.showSuccessMessage[recordId] = false; 
+          }, 3000); 
+        } else {
+          const error = await response.text();
+          console.error('Failed to add diagnosis:', error);
+        }
+      } catch (error) {
+        console.error('Failed to add diagnosis:', error);
+      }
+    },
   },
 };
 </script>
@@ -181,5 +239,34 @@ export default {
 .record-details ul {
   text-align: left; 
   margin-bottom: 5px; 
+}
+
+.diagnosis-form {
+  margin-top: 10px; 
+}
+
+.diagnosis-form textarea {
+  width: 100%;
+  height: 80px; 
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  resize: vertical; 
+}
+
+.add-diagnosis-button { 
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px; 
+  margin-top: 5px; 
+}
+
+.add-diagnosis-button:hover {
+  background-color: #218838;
 }
 </style>

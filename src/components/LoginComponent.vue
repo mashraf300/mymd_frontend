@@ -51,7 +51,11 @@ export default {
           localStorage.setItem('user_id', data.user_id);
           localStorage.setItem('role', data.role);
           console.log("UserID: ", data.role)
-          this.$router.push({ path: '/home', query: { requiresAuth: true } });
+          if(data.role == "admin") {
+            this.$router.push({ path: '/admin-dashboard', query: { requiresAuth: true, requiresAdmin: true } });
+          } else {
+            this.$router.push({ path: '/home', query: { requiresAuth: true } });
+          }
         } else {
           const error = await response.text();
           console.error('Login failed:', error);
